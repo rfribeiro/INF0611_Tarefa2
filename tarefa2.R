@@ -70,10 +70,9 @@ B_paa <- paa(data$B_norm, w)
 
 data_paa <- data.frame(point = 1:length(A_paa), A_paa = A_paa, B_paa = B_paa)
 
-
-ggplot(data = data_paa) + geom_line(aes(x = point, y = A_paa, colour='A PAA'))+ geom_point(aes(x = point, y = A_paa, colour='A PAA')) + geom_line(aes(x = point, y = B_paa, colour='B PAA')) + geom_point(aes(x = point, y = B_paa, colour='B PAA'))
-
 for (vocab_size in c('4', '5', '6', '7')) {
+  ggplot(data = data_paa) + geom_line(aes(x = point, y = A_paa, colour='A PAA'))+ geom_point(aes(x = point, y = A_paa, colour='A PAA')) + geom_line(aes(x = point, y = B_paa, colour='B PAA')) + geom_point(aes(x = point, y = B_paa, colour='B PAA')) + geom_hline(yintercept = vocab[[vocab_size]], linetype="dashed", color = "blue") + annotate(geom="text", label=vocab[[vocab_size]], x=0, y=vocab[[vocab_size]], vjust=-0.5) + ggtitle("Temp. Normalizada PAA")
+  ggsave(paste(vocab_size,"_myplot.png"))
 
   A_vocab <- alpha(A_paa, vocab_size)
   B_vocab <- alpha(B_paa, vocab_size)
