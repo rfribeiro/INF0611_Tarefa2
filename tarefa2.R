@@ -67,20 +67,21 @@ tarefa2.sax.mindist <- function (A_paa, B_paa, n, w, vocab_size, plot = T) {
   
   A_vocab <- tarefa2.alpha(A_paa, vocab_size)
   B_vocab <- tarefa2.alpha(B_paa, vocab_size)
-  print(t(A_vocab$alpha))
-  print(t(B_vocab$alpha))
+  print(t(A_vocab))
+  print(t(B_vocab))
   
   min <- tarefa2.mindist(A_vocab$val, B_vocab$val, vocab_size, n, w)
   min_round <- round(min, 3)
   if (plot == T) {
     ggplot(data = data_paa) + 
-      geom_line(aes(x = point, y = A_paa, colour='A PAA'))+geom_point(aes(x = point, y = A_paa, colour='A PAA')) + 
-      geom_line(aes(x = point, y = B_paa, colour='B PAA')) + geom_point(aes(x = point, y = B_paa, colour='B PAA')) + 
+      geom_line(aes(x = point, y = A_paa, colour='red'))+geom_point(aes(x = point, y = A_paa, colour='red')) + 
+      geom_line(aes(x = point, y = B_paa, colour='blue')) + geom_point(aes(x = point, y = B_paa, colour='blue')) + 
       geom_hline(yintercept = tarefa2.vocab[[vocab_size]], linetype="dashed", color = "blue", alpha=0.2) + 
       annotate(geom="text", label=tarefa2.vocab[[vocab_size]], x=0, y=tarefa2.vocab[[vocab_size]], vjust=-0.5, alpha=0.3) + 
       labs(title=paste("Distribuição Temperatura Normalizada PAA (",vocab_size,")=", min_round),y="Temperatura", x = "Pontos", colour="") +
       annotate(geom="text", label=A_vocab$alpha, x=seq(from=1, to=n/w, by = 1), y=A_paa, vjust=-0.5, alpha=0.3, colour='red') +
-      annotate(geom="text", label=B_vocab$alpha, x=seq(from=1, to=n/w, by = 1), y=B_paa, vjust=-0.5, alpha=0.3, colour='blue')
+      annotate(geom="text", label=B_vocab$alpha, x=seq(from=1, to=n/w, by = 1), y=B_paa, vjust=-0.5, alpha=0.3, colour='blue')+
+      scale_color_manual(labels = c("A", "B"), values = c("blue", "red"))
     ggsave(paste(vocab_size,"_myplot.png"))
   
     ggplot(data = data) + 
@@ -92,12 +93,13 @@ tarefa2.sax.mindist <- function (A_paa, B_paa, n, w, vocab_size, plot = T) {
       geom_segment(data = dd, aes(x=x, xend=xend, y=y_b,yend=yend_b, colour='blue')) +
       geom_hline(yintercept = tarefa2.vocab[[vocab_size]], linetype="dashed", color = "blue", alpha=0.2) + 
       annotate(geom="text", label=tarefa2.vocab[[vocab_size]], x=0, y=tarefa2.vocab[[vocab_size]], vjust=-0.5, alpha=0.3) +
-      annotate(geom="text", label=A_vocab$alpha, x=seq(from=3, to=n, by = w), y=A_paa, vjust=-0.5, alpha=0.3, colour='blue') +
-      annotate(geom="text", label=B_vocab$alpha, x=seq(from=3, to=n, by = w), y=B_paa, vjust=-0.5, alpha=0.3, colour='red')
+      annotate(geom="text", label=A_vocab$alpha, x=seq(from=3, to=n, by = w), y=A_paa, vjust=-0.5, alpha=0.3, colour='red') +
+      annotate(geom="text", label=B_vocab$alpha, x=seq(from=3, to=n, by = w), y=B_paa, vjust=-0.5, alpha=0.3, colour='blue')+
+      scale_color_manual(labels = c("A", "B"), values = c("blue", "red"))
     ggsave(paste(vocab_size,"_paa.png"))
   }
   
-  print(min)
+  print(paste("Dissimilaridade Min(",vocab_size,") = ",min))
 }
 
 # main 
