@@ -7,21 +7,24 @@ vocab <- list("3"=c(-0.43,0.43),
               "7"=c(-1.07,-0.57, -0.18, 0.18, 0.57, 1.07))
 
 alpha <- function(values, vocab_size) {
-  res <- c()
+  val=c()
+  alpha=c()
   for (v in values) {
     count <- 1
     for (i in vocab[[vocab_size]]) {
       if (v <= i) {
-        res <- c(res, count)
+        val <- c(val, count)
+        alpha <- c(alpha, letters[count])
         break
       }
       count <- count + 1
     }
     if (count == length(vocab[[vocab_size]])+1) {
-      res <- c(res, count)
+      val <- c(val, count)
+      alpha <- c(alpha, letters[count])
     }
   }
-  res
+  data.frame(alpha=alpha,val=val)
 }
 
 paa <- function (values, size) {
@@ -68,9 +71,15 @@ ggsave("Normal.png")
 data$A_norm <- normalize(A)
 data$B_norm <- normalize(B)
 
+mean(data$A_norm)
+sd(data$A_norm)
+
+mean(data$B_norm)
+sd(data$B_norm)
+
 ggplot(data = data) + 
-  geom_line(aes(x = point, y = A_norm, colour='A Normalized')) + 
-  geom_line(aes(x = point, y = B_norm, colour='B Normalized')) + 
+  geom_line(aes(x = point, y = A_norm, colour='A Normalizada')) + 
+  geom_line(aes(x = point, y = B_norm, colour='B Normalizada')) + 
   labs(title="Distribuição Temperatura Normalizada",y="Temperatura Normalizada", x = "Pontos", colour="") 
 ggsave("Normalizada.png")
 
@@ -82,6 +91,16 @@ nw <- n/w
 A_paa <- paa(data$A_norm, w)
 B_paa <- paa(data$B_norm, w)
 
+data_paa <- data.frame(point = 1:length(A_paa), A_paa = A_paa, B_paa = B_paa)
+
+ggplot(data = data_paa) + 
+  geom_line(aes(x = point, y = A_paa, colour='A PAA'))+ 
+  geom_point(aes(x = point, y = A_paa, colour='A PAA')) + 
+  geom_line(aes(x = point, y = B_paa, colour='B PAA')) + 
+  geom_point(aes(x = point, y = B_paa, colour='B PAA')) +
+  labs(title="Distribuição PAA (24 Dimensões)",y="Temperatura Normalizada", x = "Pontos", colour="")
+ggsave("PAA_only.png")
+
 s <- seq(from=0, to=n, by = w)
 
 dd <- data.frame(x=s[1:24], xend=s[2:25], y_a=A_paa, yend_a=A_paa, y_b=B_paa, yend_b=B_paa)
@@ -89,38 +108,41 @@ dd <- data.frame(x=s[1:24], xend=s[2:25], y_a=A_paa, yend_a=A_paa, y_b=B_paa, ye
 ggplot(data = data) + 
   geom_line(aes(x = point, y = A_norm, colour='red')) + 
   geom_line(aes(x = point, y = B_norm, colour='blue')) + 
-  labs(title="Distribuição Temperatura Normalizada",y="Temperatura Normalizada", x = "Pontos", colour="") +
+  labs(title="Distribuição PAA Segmentada",y="Temperatura Normalizada", x = "Pontos", colour="") +
   geom_vline(xintercept = seq(from=0, to=n, by = w), linetype = 'dashed', alpha=0.2) +
   geom_segment(data = dd, aes(x=x, xend=xend, y=y_a,yend=yend_a, colour='red')) +
   geom_segment(data = dd, aes(x=x, xend=xend, y=y_b,yend=yend_b, colour='blue'))
-ggsave("PAA.png")
-
-data_paa <- data.frame(point = 1:length(A_paa), A_paa = A_paa, B_paa = B_paa)
+ggsave("PAA_total.png")
 
 for (vocab_size in c('4', '5', '6', '7')) {
+  
+  A_vocab <- alpha(A_paa, vocab_size)
+  B_vocab <- alpha(B_paa, vocab_size)
+  print(t(A_vocab))
+  print(t(B_vocab))
+  
   ggplot(data = data_paa) + 
     geom_line(aes(x = point, y = A_paa, colour='A PAA'))+geom_point(aes(x = point, y = A_paa, colour='A PAA')) + 
     geom_line(aes(x = point, y = B_paa, colour='B PAA')) + geom_point(aes(x = point, y = B_paa, colour='B PAA')) + 
     geom_hline(yintercept = vocab[[vocab_size]], linetype="dashed", color = "blue", alpha=0.2) + 
-    annotate(geom="text", label=vocab[[vocab_size]], x=0, y=vocab[[vocab_size]], vjust=-0.5) + 
-    labs(title=paste("Distribuição Temperatura Normalizada PAA (",vocab_size,")"),y="Temperatura", x = "Pontos", colour="")
+    annotate(geom="text", label=vocab[[vocab_size]], x=0, y=vocab[[vocab_size]], vjust=-0.5, alpha=0.3) + 
+    labs(title=paste("Distribuição Temperatura Normalizada PAA (",vocab_size,")"),y="Temperatura", x = "Pontos", colour="") +
+    annotate(geom="text", label=A_vocab$alpha, x=seq(from=1, to=n/w, by = 1), y=A_paa, vjust=-0.5, alpha=0.3, colour='red') +
+    annotate(geom="text", label=B_vocab$alpha, x=seq(from=1, to=n/w, by = 1), y=B_paa, vjust=-0.5, alpha=0.3, colour='blue')
   ggsave(paste(vocab_size,"_myplot.png"))
   
   ggplot(data = data) + 
-    geom_line(aes(x = point, y = A_norm, colour='red')) + 
-    geom_line(aes(x = point, y = B_norm, colour='blue')) + 
-    labs(title="Distribuição Temperatura Normalizada",y="Temperatura Normalizada", x = "Pontos", colour="") +
+    geom_line(aes(x = point, y = A_norm, colour='red', alpha= 0.1)) + 
+    geom_line(aes(x = point, y = B_norm, colour='blue', alpha= 0.1)) + 
+    labs(title="Distribuição Temperatura Normalizada PAA",y="Temperatura Normalizada", x = "Pontos", colour="") +
     geom_vline(xintercept = seq(from=0, to=n, by = w), linetype = 'dashed', alpha=0.2) +
     geom_segment(data = dd, aes(x=x, xend=xend, y=y_a,yend=yend_a, colour='red')) +
     geom_segment(data = dd, aes(x=x, xend=xend, y=y_b,yend=yend_b, colour='blue')) +
     geom_hline(yintercept = vocab[[vocab_size]], linetype="dashed", color = "blue", alpha=0.2) + 
-    annotate(geom="text", label=vocab[[vocab_size]], x=0, y=vocab[[vocab_size]], vjust=-0.5)
+    annotate(geom="text", label=vocab[[vocab_size]], x=0, y=vocab[[vocab_size]], vjust=-0.5, alpha=0.3) +
+    annotate(geom="text", label=A_vocab$alpha, x=seq(from=3, to=n, by = w), y=A_paa, vjust=-0.5, alpha=0.3, colour='blue') +
+    annotate(geom="text", label=B_vocab$alpha, x=seq(from=3, to=n, by = w), y=B_paa, vjust=-0.5, alpha=0.3, colour='red')
   ggsave(paste(vocab_size,"_paa.png"))
   
-  A_vocab <- alpha(A_paa, vocab_size)
-  B_vocab <- alpha(B_paa, vocab_size)
-  print(A_vocab)
-  print(B_vocab)
-  
-  print(mindist(A_vocab, B_vocab, vocab_size, n, w))
+  print(mindist(A_vocab$val, B_vocab$val, vocab_size, n, w))
 }
